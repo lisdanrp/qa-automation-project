@@ -43,4 +43,17 @@ test.describe('Compra', () => {
     await expect(page).toHaveURL(/\/checkout-complete\.html$/);
     await expect(checkout.completeHeader).toHaveText('Thank you for your order!');
   });
+
+  test('no cierra el pedido si el carrito está vacío', async ({ page }) => {
+    test.fail(true, 'SauceDemo deja Checkout habilitado con el carrito vacío');
+
+    const inventory = new InventoryPage(page);
+    const cart = new CartPage(page);
+
+    await inventory.openCart();
+    await expect(page).toHaveURL(/\/cart\.html$/);
+    await expect(cart.title).toHaveText('Your Cart');
+    await expect(cart.itemNames).toHaveCount(0);
+    await expect(cart.checkoutButton).toBeDisabled();
+  });
 });

@@ -12,7 +12,7 @@ npx playwright install chromium firefox
 npm test
 ```
 
-`npm test` corre Chromium y Firefox, con login correcto, login fallido y compra, y el proyecto `api`, con token, alta, consulta, modificación y borrado.
+`npm test` corre Chromium y Firefox, con login correcto, login fallido, compra y el bug conocido del carrito vacío, y el proyecto `api`, con token, alta, consulta, modificación y borrado.
 
 La carga son 10 usuarios durante 60 segundos:
 
@@ -48,6 +48,16 @@ Separaría la API y la interfaz en el workflow. Si Heroku falla, hoy falla tambi
 
 En la compra volvería a mirar los nombres en el resumen y, al terminar, comprobaría que el carrito quedó vacío. El encabezado final ya se busca por el texto `Thank you for your order!`, así que la aserción repite el localizador.
 
+En la página final comprobaría la descarga de la factura. El botón `Generate PDF order` genera un PDF del pedido, y la prueba miraría que el archivo se descarga y que incluye los productos y el total.
+
+## Bugs detectados en la aplicación
+
+SauceDemo cierra un pedido sin productos. Con el carrito vacío, Checkout sigue habilitado, el resumen muestra un total de $0 y la página final dice `Thank you for your order!`. El checkout debería bloquearse.
+
+`tests/e2e/checkout.spec.js` lo ejecuta en Chromium y Firefox con `test.fail()`. La prueba comprueba que el carrito no tiene líneas y que el botón Checkout está deshabilitado. Esa aserción falla, Playwright lo espera y el pipeline sigue en verde. Si SauceDemo deshabilitara el botón, la aserción pasaría y Playwright marcaría un fallo inesperado.
+
+El hallazgo ya estaba en Qué corregí: el caso no entraba en la compra con productos porque la demo igual completa el pedido.
+
 ## Cómo usé la IA
 
 ### Qué le pedí
@@ -60,4 +70,4 @@ Las siete etapas. Playwright para la interfaz y para la API. Las aserciones en e
 
 ### Qué corregí
 
-Los localizadores pasaron de `data-test` directo a rol, placeholder o `getByTestId`, y el error de login quedó como alerta. Dejé fuera subir los tiempos de espera para tapar un fallo intermitente. El login sigue dentro de cada prueba. El carrito se comprueba dentro de la compra, y no hay un caso de carrito vacío porque SauceDemo igual llega a `Thank you for your order!`. Las actions v4 avisaban de Node 20 y pasaron a v7. La versión de las pruebas sigue en 22.
+Los localizadores pasaron de `data-test` directo a rol, placeholder o `getByTestId`, y el error de login quedó como alerta. Dejé fuera subir los tiempos de espera para tapar un fallo intermitente. El login sigue dentro de cada prueba. El carrito se comprueba dentro de la compra. El pedido vacío quedó como bug conocido, con `test.fail()`, en Bugs detectados en la aplicación. Las actions v4 avisaban de Node 20 y pasaron a v7. La versión de las pruebas sigue en 22.
