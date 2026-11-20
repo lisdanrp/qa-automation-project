@@ -22,8 +22,20 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Restaurar navegadores
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
       - name: Instalar Chromium y Firefox
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium firefox
+
+      - name: Instalar librerías del sistema
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox
 
       - name: Ejecutar pruebas
         run: npx playwright test
