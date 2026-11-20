@@ -7,6 +7,7 @@ module.exports = defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     trace: 'on-first-retry',
+    testIdAttribute: 'data-test',
   },
   projects: [
     {

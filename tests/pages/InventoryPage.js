@@ -1,17 +1,17 @@
 class InventoryPage {
   constructor(page) {
     this.page = page;
-    this.title = page.locator('[data-test="title"]');
-    this.cartLink = page.locator('[data-test="shopping-cart-link"]');
-    this.cartBadge = page.locator('[data-test="shopping-cart-badge"]');
+    this.title = page.getByTestId('title');
+    this.cartLink = page.getByTestId('shopping-cart-link');
+    this.cartBadge = page.getByTestId('shopping-cart-badge');
   }
 
   addButton(slug) {
-    return this.page.locator(`[data-test="add-to-cart-${slug}"]`);
+    return this.page.getByTestId(`add-to-cart-${slug}`);
   }
 
   removeButton(slug) {
-    return this.page.locator(`[data-test="remove-${slug}"]`);
+    return this.page.getByTestId(`remove-${slug}`);
   }
 
   async addProduct(slug) {

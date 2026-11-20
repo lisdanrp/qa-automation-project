@@ -1,9 +1,9 @@
 class CartPage {
   constructor(page) {
     this.page = page;
-    this.title = page.locator('[data-test="title"]');
-    this.itemNames = page.locator('[data-test="inventory-item-name"]');
-    this.checkoutButton = page.locator('[data-test="checkout"]');
+    this.title = page.getByTestId('title');
+    this.itemNames = page.getByTestId('inventory-item-name');
+    this.checkoutButton = page.getByRole('button', { name: 'Checkout' });
   }
 
   async checkout() {
