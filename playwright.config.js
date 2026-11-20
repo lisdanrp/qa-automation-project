@@ -15,6 +15,7 @@ module.exports = defineConfig({
       testDir: './tests/api',
       use: {
         baseURL: 'https://restful-booker.herokuapp.com',
+        extraHTTPHeaders: { Accept: 'application/json' },
       },
     },
     {
