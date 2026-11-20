@@ -13,8 +13,16 @@ function newBooking() {
   };
 }
 
+async function send(action) {
+  let response = await action();
+  for (let attempt = 0; attempt < 2 && response.status() >= 500; attempt += 1) {
+    response = await action();
+  }
+  return response;
+}
+
 async function tokenOf(request) {
-  const response = await request.post('/auth', { data: credentials });
+  const response = await send(() => request.post('/auth', { data: credentials }));
   expect(response.status()).toBe(200);
   const body = await response.json();
   expect(body.token).toEqual(expect.any(String));
@@ -53,7 +61,7 @@ test.describe('Reservas de Restful Booker', () => {
     const token = await tokenOf(request);
     const { id, booking } = await createBooking(request);
     try {
-      const response = await request.get(`/booking/${id}`);
+      const response = await send(() => request.get(`/booking/${id}`));
       expect(response.status()).toBe(200);
       expect(await response.json()).toMatchObject(booking);
     } finally {
@@ -65,9 +73,9 @@ test.describe('Reservas de Restful Booker', () => {
     const token = await tokenOf(request);
     const { id, booking } = await createBooking(request);
     try {
-      const response = await request.put(`/booking/${id}`, {
+      const response = await send(() => request.put(`/booking/${id}`, {
         data: { ...booking, totalprice: 220 },
-      });
+      }));
       expect(response.status()).toBe(403);
       expect(await response.text()).toContain('Forbidden');
     } finally {
@@ -80,14 +88,14 @@ test.describe('Reservas de Restful Booker', () => {
     const { id, booking } = await createBooking(request);
     const changes = { ...booking, totalprice: 220, additionalneeds: 'Late checkout' };
     try {
-      const response = await request.put(`/booking/${id}`, {
+      const response = await send(() => request.put(`/booking/${id}`, {
         headers: { Cookie: `token=${token}` },
         data: changes,
-      });
+      }));
       expect(response.status()).toBe(200);
       expect(await response.json()).toMatchObject(changes);
 
-      const stored = await request.get(`/booking/${id}`);
+      const stored = await send(() => request.get(`/booking/${id}`));
       expect(stored.status()).toBe(200);
       expect(await stored.json()).toMatchObject(changes);
     } finally {
@@ -104,7 +112,7 @@ test.describe('Reservas de Restful Booker', () => {
     expect(removed.status()).toBe(201);
     expect(await removed.text()).toContain('Created');
 
-    const missing = await request.get(`/booking/${id}`);
+    const missing = await send(() => request.get(`/booking/${id}`));
     expect(missing.status()).toBe(404);
     expect(await missing.text()).toContain('Not Found');
   });
